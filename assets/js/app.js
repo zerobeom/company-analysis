@@ -9,10 +9,10 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-function countryFlag(country) {
-  if (country === "한국") return "🇰🇷";
-  if (country === "미국") return "🇺🇸";
-  return "🌐";
+function countryClass(country) {
+  if (country === "한국") return "country-kr";
+  if (country === "미국") return "country-us";
+  return "country-etc";
 }
 
 async function loadCompanyList() {
@@ -46,8 +46,8 @@ function renderList(companies) {
       (c) => `
       <li>
         <a class="company-card" href="company.html?slug=${encodeURIComponent(c.slug)}">
+          ${c.country ? `<span class="country-tag ${countryClass(c.country)}">${escapeHtml(c.country)}</span>` : ""}
           <span class="ticker">${escapeHtml(c.ticker || "")}</span>
-          ${c.country ? `<span class="country-tag">${countryFlag(c.country)} ${escapeHtml(c.country)}</span>` : ""}
           <span class="cname">${escapeHtml(c.name || "")}</span>
           <span class="cthesis">${escapeHtml(c.one_liner || "")}</span>
         </a>

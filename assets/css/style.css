@@ -175,17 +175,19 @@ main.wrap {
   font-feature-settings: "tnum" 1;
 }
 
-.company-card .country-tag {
+.country-tag, .country-pill {
   font-size: 12px;
-  font-weight: 600;
-  color: var(--ink-soft);
-  background: var(--line-soft);
+  font-weight: 700;
   border-radius: 999px;
   padding: 4px 10px;
-  width: auto;
-  flex: none;
   white-space: nowrap;
 }
+
+.company-card .country-tag { flex: none; }
+
+.country-kr { color: #d92d20; background: #fef1f0; }
+.country-us { color: var(--accent); background: var(--accent-bg); }
+.country-etc { color: #0d7a4a; background: var(--up-bg); }
 
 .company-card .cname {
   font-size: 15.5px;

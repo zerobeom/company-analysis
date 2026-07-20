@@ -66,10 +66,10 @@ async function syncManifest(patch) {
 
 /* ---------------- section: hero / 투자 이유 ---------------- */
 
-function countryFlag(country) {
-  if (country === "한국") return "🇰🇷";
-  if (country === "미국") return "🇺🇸";
-  return "🌐";
+function countryClass(country) {
+  if (country === "한국") return "country-kr";
+  if (country === "미국") return "country-us";
+  return "country-etc";
 }
 
 function renderHero(admin) {
@@ -81,9 +81,9 @@ function renderHero(admin) {
     <div class="company-hero">
       <div class="eyebrow">기업분석 · 투자 리서치 저널</div>
       <div class="title-row">
-        <h1>${escapeHtml(d.name || "")}</h1>
+        ${d.country ? `<span class="country-pill ${countryClass(d.country)}">${escapeHtml(d.country)}</span>` : ""}
         ${d.ticker ? `<span class="ticker-pill">${escapeHtml(d.ticker)}</span>` : ""}
-        ${d.country ? `<span class="ticker-pill">${countryFlag(d.country)} ${escapeHtml(d.country)}</span>` : ""}
+        <h1>${escapeHtml(d.name || "")}</h1>
       </div>
       ${lastUpdate ? `<p class="meta-line">마지막 업데이트: ${escapeHtml(lastUpdate)}</p>` : ""}
       <p class="thesis">${escapeHtml(d.investment_thesis || "")}</p>
