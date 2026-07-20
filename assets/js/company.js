@@ -16,6 +16,11 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
+/** HTML 이스케이프 후 **굵게** 표기만 <strong>으로 변환 */
+function formatRich(str) {
+  return escapeHtml(str).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
 function fmtNum(n) {
   if (n === null || n === undefined || n === "") return "—";
   const num = Number(n);
@@ -247,30 +252,113 @@ function openCeoModal() {
 
 /* ---------------- section: 가치투자 사이클 ---------------- */
 
+function polar(cx, cy, r, angleDeg) {
+  const a = (angleDeg * Math.PI) / 180;
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+}
+
+function bowedPath(p1, p2, cx, cy, bow) {
+  const mx = (p1.x + p2.x) / 2;
+  const my = (p1.y + p2.y) / 2;
+  const dx = mx - cx;
+  const dy = my - cy;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  const ux = dx / dist;
+  const uy = dy / dist;
+  const cxp = mx + ux * bow;
+  const cyp = my + uy * bow;
+  return `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} Q ${cxp.toFixed(2)} ${cyp.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+}
+
+/** 1단계는 안쪽, 단계가 진행될수록 바깥쪽으로 나선형으로 배치 → 5단계가 1단계보다 더 큰 다음 사이클로 이어지는 형태 */
+function computeCycleLayout(n) {
+  const cx = 50, cy = 50;
+  const startAngle = -90;
+  const angleStep = 360 / n;
+  const r0 = 14;
+  const rStep = n > 1 ? (34 - r0) / (n - 1) : 0;
+  const points = [];
+  for (let i = 0; i < n; i++) {
+    points.push(polar(cx, cy, r0 + i * rStep, startAngle + i * angleStep));
+  }
+  const extR = n > 1 ? r0 + n * rStep : r0 + 20;
+  const ext = polar(cx, cy, extR, startAngle);
+  return { cx, cy, points, ext };
+}
+
 function renderCycle(admin) {
   const cycle = state.data.value_cycle || [];
-  const steps = cycle
-    .map(
-      (s) => `
-    <div class="cycle-step" data-n="${s.stage}">
-      <div class="st-title">${escapeHtml(s.title || "")}</div>
-      <div class="st-desc">${escapeHtml(s.desc || "")}</div>
-    </div>`
-    )
-    .join("");
+  const n = cycle.length;
 
-  if (!cycle.length && !admin) return "";
+  if (!n && !admin) return "";
+
+  let spiralHtml = "";
+  let mobileHtml = "";
+
+  if (n) {
+    const { cx, cy, points, ext } = computeCycleLayout(n);
+
+    const arrows = [];
+    for (let i = 0; i < n - 1; i++) {
+      arrows.push(`<path class="cy-arrow" marker-end="url(#cyArrow)" d="${bowedPath(points[i], points[i + 1], cx, cy, 6)}" />`);
+    }
+    const growArrow = `<path class="cy-arrow cy-arrow-grow" marker-end="url(#cyArrowGrow)" stroke-dasharray="2.2 2.2" d="${bowedPath(points[n - 1], ext, cx, cy, 8)}" />`;
+
+    const svg = `
+      <svg viewBox="0 0 100 100">
+        <defs>
+          <marker id="cyArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--accent-soft)"></path>
+          </marker>
+          <marker id="cyArrowGrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--up)"></path>
+          </marker>
+        </defs>
+        ${arrows.join("")}
+        ${growArrow}
+      </svg>`;
+
+    const nodes = cycle
+      .map(
+        (s, i) => `
+      <div class="cycle-node${i === n - 1 ? " is-last" : ""}" style="left:${points[i].x}%; top:${points[i].y}%;">
+        <div class="badge-num">${s.stage}</div>
+        <div class="st-title">${escapeHtml(s.title || "")}</div>
+        <div class="st-desc">${escapeHtml(s.desc || "")}</div>
+      </div>`
+      )
+      .join("");
+
+    const growLabel = `<div class="cycle-grow-label" style="left:${ext.x}%; top:${ext.y}%;">↻ 반복될수록 커짐</div>`;
+
+    spiralHtml = `<div class="cycle-spiral">${svg}${nodes}${growLabel}</div>`;
+
+    mobileHtml = `
+      <div class="cycle-row-mobile">
+        ${cycle
+          .map(
+            (s) => `
+          <div class="cycle-step">
+            <div class="badge-num">${s.stage}</div>
+            <div class="st-title">${escapeHtml(s.title || "")}</div>
+            <div class="st-desc">${escapeHtml(s.desc || "")}</div>
+          </div>`
+          )
+          .join("")}
+        <div class="cycle-loop-note">↻ ${n}단계 성과가 다시 1단계로 이어지며, 반복될수록 사이클이 커집니다</div>
+      </div>`;
+  }
 
   return `
   <section class="block">
     <div class="section-head-row">
       <div class="lhs">
         <h2>가치투자 사이클</h2>
-        ${cycle.length ? `<span class="badge-count">${cycle.length}단계</span>` : ""}
+        ${n ? `<span class="badge-count">${n}단계</span>` : ""}
       </div>
       ${admin ? `<button type="button" class="edit-link" id="edit-cycle-btn">✎ 편집</button>` : ""}
     </div>
-    ${cycle.length ? `<div class="cycle-row">${steps}</div>` : `<p class="qtable-note">아직 등록된 사이클이 없습니다.</p>`}
+    ${n ? spiralHtml + mobileHtml : `<p class="qtable-note">아직 등록된 사이클이 없습니다.</p>`}
   </section>`;
 }
 
@@ -438,10 +526,10 @@ function renderUpdates(admin) {
       ${admin ? `<button type="button" class="tl-del" data-idx="${u._idx}" title="삭제">✕</button>` : ""}
       <div class="tl-date">${escapeHtml(u.date || "")}</div>
       <div>
-        <div class="tl-content">${escapeHtml(u.content || "")}</div>
+        <div class="tl-content">${formatRich(u.content || "")}</div>
         ${
           u.comment
-            ? `<div class="tl-comment"><span class="cm-label">코멘트</span>${escapeHtml(u.comment)}</div>`
+            ? `<div class="tl-comment"><span class="cm-label">코멘트</span>${formatRich(u.comment)}</div>`
             : ""
         }
       </div>
@@ -472,7 +560,8 @@ function openAddUpdateModal() {
     fields: [
       { name: "date", label: "날짜", type: "date" },
       { name: "content", label: "내용", type: "textarea", rows: 5 },
-      { name: "comment", label: "코멘트 (선택)", type: "textarea", rows: 3 }
+      { name: "comment", label: "코멘트 (선택)", type: "textarea", rows: 3 },
+      { type: "note", text: "굵게 표시하려면 텍스트를 **이렇게** 별표 두 개로 감싸세요." }
     ],
     submitLabel: "추가",
     onSubmit: async (v) => {
@@ -512,7 +601,6 @@ function render() {
 
   root.innerHTML = `
     ${renderHero(admin)}
-    ${renderStatCards()}
     ${renderCeo(admin)}
     ${renderCycle(admin)}
     ${renderQuantitative(admin)}
