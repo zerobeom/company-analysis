@@ -436,9 +436,9 @@ section.block {
 .cycle-spiral {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: 400px;
   aspect-ratio: 1 / 1;
-  margin: 4px auto 14px;
+  margin: 0 auto 6px;
 }
 
 .cycle-spiral svg {
@@ -463,12 +463,12 @@ section.block {
 
 .cycle-node {
   position: absolute;
-  width: 104px;
+  width: 96px;
   transform: translate(-50%, -50%);
   background: var(--bg-raised);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
-  padding: 9px 10px 8px;
+  padding: 8px 9px 7px;
   box-shadow: var(--shadow-sm);
   text-align: left;
 }
@@ -607,7 +607,7 @@ table.qtable td.empty { color: var(--ink-faint); }
   display: grid;
   grid-template-columns: 96px 1fr;
   gap: 18px;
-  padding: 18px 44px 18px 18px;
+  padding: 18px 58px 18px 18px;
   background: var(--bg);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
@@ -728,10 +728,15 @@ table.qtable td.empty { color: var(--ink-faint); }
 
 .add-company-bar { margin: 8px 0 24px; }
 
-.tl-del {
+.tl-actions {
   position: absolute;
-  top: 16px;
-  right: 14px;
+  top: 14px;
+  right: 12px;
+  display: flex;
+  gap: 2px;
+}
+
+.tl-edit, .tl-del {
   font-size: 12px;
   color: var(--ink-faint);
   background: none;
@@ -740,6 +745,7 @@ table.qtable td.empty { color: var(--ink-faint); }
   padding: 4px 6px;
 }
 
+.tl-edit:hover { color: var(--accent); }
 .tl-del:hover { color: var(--down); }
 
 /* ---------- modal ---------- */

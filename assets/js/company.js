@@ -281,7 +281,7 @@ function computeCycleLayout(n) {
   const cx = 50, cy = 50;
   const startAngle = -90;
   const angleStep = 360 / n;
-  const r = n > 1 ? 32 : 0;
+  const r = n > 1 ? 34 : 0;
   const points = [];
   for (let i = 0; i < n; i++) {
     points.push(polar(cx, cy, r, startAngle + i * angleStep));
@@ -526,7 +526,14 @@ function renderUpdates(admin) {
     .map(
       (u) => `
     <div class="tl-entry">
-      ${admin ? `<button type="button" class="tl-del" data-idx="${u._idx}" title="삭제">✕</button>` : ""}
+      ${
+        admin
+          ? `<div class="tl-actions">
+               <button type="button" class="tl-edit" data-idx="${u._idx}" title="수정">✎</button>
+               <button type="button" class="tl-del" data-idx="${u._idx}" title="삭제">✕</button>
+             </div>`
+          : ""
+      }
       <div class="tl-date">${escapeHtml(u.date || "")}</div>
       <div>
         <div class="tl-content">${formatRich(u.content || "")}</div>
@@ -557,25 +564,33 @@ function renderUpdates(admin) {
   </section>`;
 }
 
-function openAddUpdateModal() {
+function openAddUpdateModal(idx) {
+  const isEdit = idx !== undefined && idx !== null;
+  const existing = isEdit ? state.data.updates[idx] : null;
+
   Modal.open({
-    title: "새 업데이트 추가",
+    title: isEdit ? "업데이트 수정" : "새 업데이트 추가",
     fields: [
-      { name: "date", label: "날짜", type: "date" },
-      { name: "content", label: "내용", type: "textarea", rows: 5 },
-      { name: "comment", label: "코멘트 (선택)", type: "textarea", rows: 3 },
+      { name: "date", label: "날짜", type: "date", value: existing?.date },
+      { name: "content", label: "내용", type: "textarea", rows: 5, value: existing?.content },
+      { name: "comment", label: "코멘트 (선택)", type: "textarea", rows: 3, value: existing?.comment },
       { type: "note", text: "굵게 표시하려면 텍스트를 **이렇게** 별표 두 개로 감싸세요." }
     ],
-    submitLabel: "추가",
+    submitLabel: isEdit ? "저장" : "추가",
     onSubmit: async (v) => {
       if (!v.date) throw new Error("날짜를 입력하세요.");
       if (!state.data.updates) state.data.updates = [];
-      state.data.updates.push({
+      const entry = {
         date: v.date.trim(),
         content: v.content.trim(),
         comment: v.comment.trim()
-      });
-      await saveData(`Add update ${v.date}: ${state.slug}`);
+      };
+      if (isEdit) {
+        state.data.updates[idx] = entry;
+      } else {
+        state.data.updates.push(entry);
+      }
+      await saveData(`${isEdit ? "Edit" : "Add"} update ${v.date}: ${state.slug}`);
     }
   });
 }
@@ -618,7 +633,10 @@ function render() {
   document.getElementById("edit-cycle-btn")?.addEventListener("click", openCycleModal);
   document.getElementById("edit-metrics-btn")?.addEventListener("click", openMetricsModal);
   document.getElementById("add-quarter-btn")?.addEventListener("click", openQuarterModal);
-  document.getElementById("add-update-btn")?.addEventListener("click", openAddUpdateModal);
+  document.getElementById("add-update-btn")?.addEventListener("click", () => openAddUpdateModal());
+  root.querySelectorAll(".tl-edit").forEach((btn) => {
+    btn.addEventListener("click", () => openAddUpdateModal(Number(btn.dataset.idx)));
+  });
   root.querySelectorAll(".tl-del").forEach((btn) => {
     btn.addEventListener("click", () => confirmDeleteUpdate(Number(btn.dataset.idx)));
   });
