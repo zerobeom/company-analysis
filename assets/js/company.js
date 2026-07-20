@@ -63,13 +63,80 @@ async function syncManifest(patch) {
 
 function renderHero(admin) {
   const d = state.data;
+  const sortedUpdates = (d.updates || []).slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+  const lastUpdate = sortedUpdates[0]?.date;
+
   return `
     <div class="company-hero">
-      <div class="ticker-line">${escapeHtml(d.ticker || "")}</div>
-      <h1>${escapeHtml(d.name || "")}</h1>
-      <p class="name-en">${escapeHtml(d.name_en || "")}</p>
+      <div class="eyebrow">기업분석 · 투자 리서치 저널</div>
+      <div class="title-row">
+        <h1>${escapeHtml(d.name || "")}</h1>
+        ${d.ticker ? `<span class="ticker-pill">${escapeHtml(d.ticker)}</span>` : ""}
+      </div>
+      ${d.name_en ? `<p class="name-en">${escapeHtml(d.name_en)}</p>` : ""}
+      ${lastUpdate ? `<p class="meta-line">마지막 업데이트: ${escapeHtml(lastUpdate)}</p>` : ""}
       <p class="thesis">${escapeHtml(d.investment_thesis || "")}</p>
-      ${admin ? `<button type="button" class="edit-link" id="edit-basic-btn">✎ 기본 정보 / 투자 이유 편집</button>` : ""}
+      ${admin ? `<button type="button" class="btn-add" id="edit-basic-btn" style="margin-top:18px;">✎ 기본 정보 / 투자 이유 편집</button>` : ""}
+    </div>`;
+}
+
+/* ---------------- section: 요약 스탯 카드 ---------------- */
+
+function getStatCards(data) {
+  const q = data.quantitative;
+  const cards = [];
+
+  if (q && q.metrics?.length && q.quarters?.length) {
+    let latestIdx = -1;
+    for (let i = q.quarters.length - 1; i >= 0; i--) {
+      if (q.metrics.some((m) => q.quarters[i][m] !== null && q.quarters[i][m] !== undefined)) {
+        latestIdx = i;
+        break;
+      }
+    }
+    if (latestIdx >= 0) {
+      const prevIdx = latestIdx - 1;
+      q.metrics.slice(0, 4).forEach((m) => {
+        const cur = q.quarters[latestIdx][m];
+        const prev = prevIdx >= 0 ? q.quarters[prevIdx][m] : null;
+        let icon = "●", cls = "flat", caption = q.quarters[latestIdx].period;
+        if (cur !== null && cur !== undefined && prev !== null && prev !== undefined && prev !== 0) {
+          const pct = ((cur - prev) / Math.abs(prev)) * 100;
+          if (pct > 0.5) { icon = "▲"; cls = "up"; }
+          else if (pct < -0.5) { icon = "▼"; cls = "down"; }
+          caption = `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}% QoQ`;
+        }
+        cards.push({ label: q.metric_labels?.[m] || m, value: fmtNum(cur), icon, cls, caption });
+      });
+    }
+  }
+
+  cards.push({
+    label: "펀더멘탈 업데이트",
+    value: String((data.updates || []).length),
+    icon: "●",
+    cls: "flat",
+    caption: "누적 기록"
+  });
+
+  return cards.slice(0, 5);
+}
+
+function renderStatCards() {
+  const cards = getStatCards(state.data);
+  if (!cards.length) return "";
+  return `
+    <div class="stat-cards">
+      ${cards
+        .map(
+          (c) => `
+        <div class="stat-card">
+          <div class="stat-top ${c.cls}">${c.icon} ${escapeHtml(c.label)}</div>
+          <div class="stat-value">${escapeHtml(c.value)}</div>
+          <div class="stat-caption ${c.cls}">${escapeHtml(c.caption)}</div>
+        </div>`
+        )
+        .join("")}
     </div>`;
 }
 
@@ -109,7 +176,7 @@ function renderCeo(admin) {
   return `
   <section class="block">
     <div class="section-head-row">
-      <h2>경영진 (CEO)</h2>
+      <div class="lhs"><h2>경영진 (CEO)</h2></div>
       ${admin ? `<button type="button" class="edit-link" id="edit-ceo-btn">✎ 편집</button>` : ""}
     </div>
     <p class="ceo-name">${escapeHtml(ceo.name || "—")}</p>
@@ -197,7 +264,10 @@ function renderCycle(admin) {
   return `
   <section class="block">
     <div class="section-head-row">
-      <h2>가치투자 사이클</h2>
+      <div class="lhs">
+        <h2>가치투자 사이클</h2>
+        ${cycle.length ? `<span class="badge-count">${cycle.length}단계</span>` : ""}
+      </div>
       ${admin ? `<button type="button" class="edit-link" id="edit-cycle-btn">✎ 편집</button>` : ""}
     </div>
     ${cycle.length ? `<div class="cycle-row">${steps}</div>` : `<p class="qtable-note">아직 등록된 사이클이 없습니다.</p>`}
@@ -256,7 +326,7 @@ function renderQuantitative(admin) {
   return `
   <section class="block">
     <div class="section-head-row">
-      <h2>정량 펀더멘탈</h2>
+      <div class="lhs"><h2>정량 펀더멘탈</h2></div>
       <span>
         ${admin ? `<button type="button" class="edit-link" id="edit-metrics-btn">✎ 지표 설정</button>` : ""}
         ${admin ? `<button type="button" class="edit-link" id="add-quarter-btn">＋ 분기 추가/수정</button>` : ""}
@@ -382,7 +452,10 @@ function renderUpdates(admin) {
   return `
   <section class="block">
     <div class="section-head-row">
-      <h2>펀더멘탈 업데이트</h2>
+      <div class="lhs">
+        <h2>펀더멘탈 업데이트</h2>
+        ${updates.length ? `<span class="badge-count">${updates.length}</span>` : ""}
+      </div>
       ${admin ? `<button type="button" class="edit-link" id="add-update-btn">＋ 새 업데이트</button>` : ""}
     </div>
     ${
@@ -439,6 +512,7 @@ function render() {
 
   root.innerHTML = `
     ${renderHero(admin)}
+    ${renderStatCards()}
     ${renderCeo(admin)}
     ${renderCycle(admin)}
     ${renderQuantitative(admin)}
