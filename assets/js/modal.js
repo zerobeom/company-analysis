@@ -32,6 +32,20 @@ const Modal = (() => {
         <textarea id="${id}" name="${f.name}" rows="${f.rows || 4}" placeholder="${esc(f.placeholder || "")}">${esc(val)}</textarea>
       </div>`;
     }
+    if (f.type === "select") {
+      const opts = (f.options || [])
+        .map((o) => {
+          const optVal = typeof o === "string" ? o : o.value;
+          const optLabel = typeof o === "string" ? o : o.label;
+          const selected = String(optVal) === String(val) ? "selected" : "";
+          return `<option value="${esc(optVal)}" ${selected}>${esc(optLabel)}</option>`;
+        })
+        .join("");
+      return `<div class="mf-row">
+        <label class="mf-label" for="${id}">${esc(f.label)}</label>
+        <select id="${id}" name="${f.name}">${opts}</select>
+      </div>`;
+    }
     return `<div class="mf-row">
       <label class="mf-label" for="${id}">${esc(f.label)}</label>
       <input id="${id}" name="${f.name}" type="${f.type || "text"}" value="${esc(val)}"

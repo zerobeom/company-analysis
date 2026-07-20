@@ -1,11 +1,9 @@
 {
   "slug": "intel",
   "name": "인텔",
-  "name_en": "Intel Corporation",
   "ticker": "INTC",
-
+  "country": "미국",
   "investment_thesis": "미국의 AI 인프라 국산화 및 탈대만 리스크 분산의 최대 수혜주",
-
   "ceo": {
     "name": "Lip-Bu Tan (립부 탄)",
     "appointed_date": "2025-03-18",
@@ -22,15 +20,33 @@
     "ownership_pct": 0.00024,
     "risk_factors": "대외적인 자본 유치 성과에 비해, 내부 조직의 급격한 구조조정 속도와 파운드리 부문 정상화 여부 검증 필요"
   },
-
   "value_cycle": [
-    { "stage": 1, "title": "자본확보", "desc": "외부자본 + 매출" },
-    { "stage": 2, "title": "첨단 공정 투자", "desc": "18A / 14A 팹" },
-    { "stage": 3, "title": "자사 제품으로 공정 검증", "desc": "팬서레이크, Xeon6" },
-    { "stage": 4, "title": "AI 인프라 시스템 판매", "desc": "" },
-    { "stage": 5, "title": "파운드리 외부 고객 유치", "desc": "" }
+    {
+      "stage": 1,
+      "title": "자본확보",
+      "desc": "외부자본 + 매출"
+    },
+    {
+      "stage": 2,
+      "title": "첨단 공정 투자",
+      "desc": "18A / 14A 팹"
+    },
+    {
+      "stage": 3,
+      "title": "자사 제품으로 공정 검증",
+      "desc": "팬서레이크, Xeon6"
+    },
+    {
+      "stage": 4,
+      "title": "AI 인프라 시스템 판매",
+      "desc": ""
+    },
+    {
+      "stage": 5,
+      "title": "파운드리 외부 고객 유치",
+      "desc": ""
+    }
   ],
-
   "updates": [
     {
       "date": "2025-03-18",
@@ -103,10 +119,15 @@
       "comment": "Q1 2026 실적발표에서 AMD보다 빠르게 성장한다던 발언과 반대"
     }
   ],
-
   "quantitative": {
     "unit": "$M",
-    "metrics": ["revenue", "fcf", "ccg", "dcai", "foundry"],
+    "metrics": [
+      "revenue",
+      "fcf",
+      "ccg",
+      "dcai",
+      "foundry"
+    ],
     "metric_labels": {
       "revenue": "매출 (Total Revenues)",
       "fcf": "잉여현금흐름 (FCF)",
@@ -115,14 +136,70 @@
       "foundry": "파운드리 매출"
     },
     "quarters": [
-      { "period": "25' Q1", "revenue": 12667, "fcf": -4370, "ccg": 7629, "dcai": 4126, "foundry": 4667 },
-      { "period": "25' Q2", "revenue": 12859, "fcf": -1500, "ccg": 7871, "dcai": 3939, "foundry": 4417 },
-      { "period": "25' Q3", "revenue": 13653, "fcf": 121,   "ccg": 8535, "dcai": 4117, "foundry": 4235 },
-      { "period": "25' Q4", "revenue": 13674, "fcf": 800,   "ccg": 8193, "dcai": 4737, "foundry": 4507 },
-      { "period": "26' Q1", "revenue": 13577, "fcf": -2540, "ccg": 7727, "dcai": 5052, "foundry": 5421 },
-      { "period": "26' Q2", "revenue": null, "fcf": null, "ccg": null, "dcai": null, "foundry": null },
-      { "period": "26' Q3", "revenue": null, "fcf": null, "ccg": null, "dcai": null, "foundry": null },
-      { "period": "26' Q4", "revenue": null, "fcf": null, "ccg": null, "dcai": null, "foundry": null }
+      {
+        "period": "25' Q1",
+        "revenue": 12667,
+        "fcf": -4370,
+        "ccg": 7629,
+        "dcai": 4126,
+        "foundry": 4667
+      },
+      {
+        "period": "25' Q2",
+        "revenue": 12859,
+        "fcf": -1500,
+        "ccg": 7871,
+        "dcai": 3939,
+        "foundry": 4417
+      },
+      {
+        "period": "25' Q3",
+        "revenue": 13653,
+        "fcf": 121,
+        "ccg": 8535,
+        "dcai": 4117,
+        "foundry": 4235
+      },
+      {
+        "period": "25' Q4",
+        "revenue": 13674,
+        "fcf": 800,
+        "ccg": 8193,
+        "dcai": 4737,
+        "foundry": 4507
+      },
+      {
+        "period": "26' Q1",
+        "revenue": 13577,
+        "fcf": -2540,
+        "ccg": 7727,
+        "dcai": 5052,
+        "foundry": 5421
+      },
+      {
+        "period": "26' Q2",
+        "revenue": null,
+        "fcf": null,
+        "ccg": null,
+        "dcai": null,
+        "foundry": null
+      },
+      {
+        "period": "26' Q3",
+        "revenue": null,
+        "fcf": null,
+        "ccg": null,
+        "dcai": null,
+        "foundry": null
+      },
+      {
+        "period": "26' Q4",
+        "revenue": null,
+        "fcf": null,
+        "ccg": null,
+        "dcai": null,
+        "foundry": null
+      }
     ]
   }
 }

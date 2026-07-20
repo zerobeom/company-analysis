@@ -62,6 +62,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 0 24px;
 }
 
+main.wrap {
+  padding-bottom: 80px;
+}
+
 .eyebrow {
   font-size: 12px;
   font-weight: 700;
@@ -169,6 +173,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   width: auto;
   flex: none;
   font-feature-settings: "tnum" 1;
+}
+
+.company-card .country-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: var(--line-soft);
+  border-radius: 999px;
+  padding: 4px 10px;
+  width: auto;
+  flex: none;
+  white-space: nowrap;
 }
 
 .company-card .cname {
@@ -413,12 +429,12 @@ section.block {
   margin-bottom: 5px;
 }
 
-/* ---------- value cycle: spiral flywheel diagram ---------- */
+/* ---------- value cycle: circular diagram ---------- */
 
 .cycle-spiral {
   position: relative;
   width: 100%;
-  max-width: 560px;
+  max-width: 520px;
   aspect-ratio: 1 / 1;
   margin: 4px auto 14px;
 }
@@ -438,9 +454,9 @@ section.block {
   opacity: 0.85;
 }
 
-.cy-arrow-grow {
+.cy-arrow-close {
   stroke: var(--up);
-  stroke-width: 0.8;
+  stroke-width: 0.7;
 }
 
 .cycle-node {
@@ -453,10 +469,6 @@ section.block {
   padding: 9px 10px 8px;
   box-shadow: var(--shadow-sm);
   text-align: left;
-}
-
-.cycle-node.is-last {
-  border-color: var(--up);
 }
 
 .cycle-node .badge-num {
@@ -475,8 +487,6 @@ section.block {
   flex: none;
 }
 
-.cycle-node.is-last .badge-num { background: var(--up); }
-
 .cycle-node .st-title {
   font-size: 12.5px;
   font-weight: 700;
@@ -488,18 +498,6 @@ section.block {
   font-size: 10.5px;
   color: var(--ink-soft);
   line-height: 1.32;
-}
-
-.cycle-grow-label {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  font-size: 11px;
-  font-weight: 700;
-  color: #0d7a4a;
-  background: var(--up-bg);
-  border-radius: 999px;
-  padding: 4px 10px;
-  white-space: nowrap;
 }
 
 /* mobile fallback: linear stacked cards, shown only on narrow screens */
@@ -809,7 +807,8 @@ table.qtable td.empty { color: var(--ink-faint); }
 }
 
 .modal-form input,
-.modal-form textarea {
+.modal-form textarea,
+.modal-form select {
   width: 100%;
   font-family: var(--sans);
   font-size: 14px;
@@ -822,7 +821,8 @@ table.qtable td.empty { color: var(--ink-faint); }
 }
 
 .modal-form input:focus,
-.modal-form textarea:focus {
+.modal-form textarea:focus,
+.modal-form select:focus {
   outline: none;
   border-color: var(--accent);
   background: var(--bg-raised);

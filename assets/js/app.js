@@ -9,6 +9,12 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
+function countryFlag(country) {
+  if (country === "한국") return "🇰🇷";
+  if (country === "미국") return "🇺🇸";
+  return "🌐";
+}
+
 async function loadCompanyList() {
   const listEl = document.getElementById("company-list");
   listEl.innerHTML = '<li class="empty-note">불러오는 중…</li>';
@@ -41,6 +47,7 @@ function renderList(companies) {
       <li>
         <a class="company-card" href="company.html?slug=${encodeURIComponent(c.slug)}">
           <span class="ticker">${escapeHtml(c.ticker || "")}</span>
+          ${c.country ? `<span class="country-tag">${countryFlag(c.country)} ${escapeHtml(c.country)}</span>` : ""}
           <span class="cname">${escapeHtml(c.name || "")}</span>
           <span class="cthesis">${escapeHtml(c.one_liner || "")}</span>
         </a>
@@ -65,27 +72,27 @@ function openAddCompanyModal() {
   Modal.open({
     title: "새 기업 추가",
     fields: [
-      { name: "slug", label: "slug (영문 소문자, 예: nvda)", placeholder: "nvda" },
-      { name: "name", label: "기업명 (한글)", placeholder: "엔비디아" },
-      { name: "name_en", label: "기업명 (영문)", placeholder: "NVIDIA Corporation" },
+      { name: "name", label: "기업명", placeholder: "엔비디아" },
       { name: "ticker", label: "티커", placeholder: "NVDA" },
-      { name: "one_liner", label: "투자 이유 (한 줄)", type: "textarea", rows: 2, placeholder: "핵심 투자 이유" }
+      { name: "country", label: "국가", type: "select", options: ["한국", "미국", "기타"], value: "한국" },
+      { name: "one_liner", label: "투자 이유 (한 줄)", type: "textarea", rows: 2, placeholder: "핵심 투자 이유" },
+      { type: "note", text: "slug(내부 식별 코드)는 티커를 소문자로 변환해 자동으로 생성됩니다." }
     ],
     submitLabel: "추가하기",
     onSubmit: async (v) => {
-      const slug = v.slug.trim().toLowerCase();
-      if (!/^[a-z0-9_-]+$/.test(slug)) {
-        throw new Error("slug는 영문 소문자, 숫자, -, _ 만 사용할 수 있습니다.");
-      }
+      const ticker = v.ticker.trim().toUpperCase();
+      const slug = ticker.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      if (!slug) throw new Error("티커에서 유효한 slug를 만들 수 없습니다. 티커를 확인하세요.");
+
       const path = `data/companies/${slug}.json`;
       const existing = await GH.getJson(path);
-      if (existing.json) throw new Error("이미 존재하는 slug입니다.");
+      if (existing.json) throw new Error(`이미 존재하는 기업입니다. (slug: ${slug})`);
 
       const companyData = {
         slug,
         name: v.name.trim(),
-        name_en: v.name_en.trim(),
-        ticker: v.ticker.trim().toUpperCase(),
+        ticker,
+        country: v.country,
         investment_thesis: v.one_liner.trim(),
         ceo: {
           name: "",
@@ -106,8 +113,8 @@ function openAddCompanyModal() {
       list.push({
         slug,
         name: v.name.trim(),
-        name_en: v.name_en.trim(),
-        ticker: v.ticker.trim().toUpperCase(),
+        ticker,
+        country: v.country,
         one_liner: v.one_liner.trim()
       });
       await GH.putJson("data/companies.json", list, manifest.sha, `List company: ${v.name}`);

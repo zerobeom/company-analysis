@@ -1,8 +1,8 @@
 {
-  "slug": "ticker-lowercase",
-  "name": "기업명 (한글)",
-  "name_en": "Company Name (English)",
+  "slug": "ticker-lowercase (사이트에서 추가하면 티커를 소문자로 변환해 자동 생성됩니다)",
+  "name": "기업명",
   "ticker": "TICK",
+  "country": "한국 | 미국 | 기타",
 
   "investment_thesis": "이 기업에 투자하는 한 문장 핵심 이유",
 

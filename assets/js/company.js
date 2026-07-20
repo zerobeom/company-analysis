@@ -66,6 +66,12 @@ async function syncManifest(patch) {
 
 /* ---------------- section: hero / 투자 이유 ---------------- */
 
+function countryFlag(country) {
+  if (country === "한국") return "🇰🇷";
+  if (country === "미국") return "🇺🇸";
+  return "🌐";
+}
+
 function renderHero(admin) {
   const d = state.data;
   const sortedUpdates = (d.updates || []).slice().sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -77,8 +83,8 @@ function renderHero(admin) {
       <div class="title-row">
         <h1>${escapeHtml(d.name || "")}</h1>
         ${d.ticker ? `<span class="ticker-pill">${escapeHtml(d.ticker)}</span>` : ""}
+        ${d.country ? `<span class="ticker-pill">${countryFlag(d.country)} ${escapeHtml(d.country)}</span>` : ""}
       </div>
-      ${d.name_en ? `<p class="name-en">${escapeHtml(d.name_en)}</p>` : ""}
       ${lastUpdate ? `<p class="meta-line">마지막 업데이트: ${escapeHtml(lastUpdate)}</p>` : ""}
       <p class="thesis">${escapeHtml(d.investment_thesis || "")}</p>
       ${admin ? `<button type="button" class="btn-add" id="edit-basic-btn" style="margin-top:18px;">✎ 기본 정보 / 투자 이유 편집</button>` : ""}
@@ -150,19 +156,19 @@ function openBasicModal() {
   Modal.open({
     title: "기본 정보 / 투자 이유 편집",
     fields: [
-      { name: "name", label: "기업명 (한글)", value: d.name },
-      { name: "name_en", label: "기업명 (영문)", value: d.name_en },
+      { name: "name", label: "기업명", value: d.name },
       { name: "ticker", label: "티커", value: d.ticker },
+      { name: "country", label: "국가", type: "select", options: ["한국", "미국", "기타"], value: d.country || "한국" },
       { name: "investment_thesis", label: "투자 이유", type: "textarea", rows: 4, value: d.investment_thesis }
     ],
     submitLabel: "저장",
     onSubmit: async (v) => {
       d.name = v.name.trim();
-      d.name_en = v.name_en.trim();
       d.ticker = v.ticker.trim().toUpperCase();
+      d.country = v.country;
       d.investment_thesis = v.investment_thesis.trim();
       await saveData(`Update basic info: ${state.slug}`);
-      await syncManifest({ name: d.name, name_en: d.name_en, ticker: d.ticker, one_liner: d.investment_thesis });
+      await syncManifest({ name: d.name, ticker: d.ticker, country: d.country, one_liner: d.investment_thesis });
     }
   });
 }
@@ -270,20 +276,17 @@ function bowedPath(p1, p2, cx, cy, bow) {
   return `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} Q ${cxp.toFixed(2)} ${cyp.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
 }
 
-/** 1단계는 안쪽, 단계가 진행될수록 바깥쪽으로 나선형으로 배치 → 5단계가 1단계보다 더 큰 다음 사이클로 이어지는 형태 */
+/** N단계를 원 위에 균등한 간격으로 배치하고, 마지막 단계에서 다시 1단계로 순환 */
 function computeCycleLayout(n) {
   const cx = 50, cy = 50;
   const startAngle = -90;
   const angleStep = 360 / n;
-  const r0 = 14;
-  const rStep = n > 1 ? (34 - r0) / (n - 1) : 0;
+  const r = n > 1 ? 32 : 0;
   const points = [];
   for (let i = 0; i < n; i++) {
-    points.push(polar(cx, cy, r0 + i * rStep, startAngle + i * angleStep));
+    points.push(polar(cx, cy, r, startAngle + i * angleStep));
   }
-  const extR = n > 1 ? r0 + n * rStep : r0 + 20;
-  const ext = polar(cx, cy, extR, startAngle);
-  return { cx, cy, points, ext };
+  return { cx, cy, points };
 }
 
 function renderCycle(admin) {
@@ -296,13 +299,16 @@ function renderCycle(admin) {
   let mobileHtml = "";
 
   if (n) {
-    const { cx, cy, points, ext } = computeCycleLayout(n);
+    const { cx, cy, points } = computeCycleLayout(n);
 
     const arrows = [];
-    for (let i = 0; i < n - 1; i++) {
-      arrows.push(`<path class="cy-arrow" marker-end="url(#cyArrow)" d="${bowedPath(points[i], points[i + 1], cx, cy, 6)}" />`);
+    for (let i = 0; i < n; i++) {
+      const next = points[(i + 1) % n];
+      const isClosing = i === n - 1;
+      arrows.push(
+        `<path class="cy-arrow${isClosing ? " cy-arrow-close" : ""}" marker-end="url(#cyArrow${isClosing ? "Close" : ""})" d="${bowedPath(points[i], next, cx, cy, 7)}" />`
+      );
     }
-    const growArrow = `<path class="cy-arrow cy-arrow-grow" marker-end="url(#cyArrowGrow)" stroke-dasharray="2.2 2.2" d="${bowedPath(points[n - 1], ext, cx, cy, 8)}" />`;
 
     const svg = `
       <svg viewBox="0 0 100 100">
@@ -310,18 +316,17 @@ function renderCycle(admin) {
           <marker id="cyArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--accent-soft)"></path>
           </marker>
-          <marker id="cyArrowGrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <marker id="cyArrowClose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--up)"></path>
           </marker>
         </defs>
         ${arrows.join("")}
-        ${growArrow}
       </svg>`;
 
     const nodes = cycle
       .map(
         (s, i) => `
-      <div class="cycle-node${i === n - 1 ? " is-last" : ""}" style="left:${points[i].x}%; top:${points[i].y}%;">
+      <div class="cycle-node" style="left:${points[i].x}%; top:${points[i].y}%;">
         <div class="badge-num">${s.stage}</div>
         <div class="st-title">${escapeHtml(s.title || "")}</div>
         <div class="st-desc">${escapeHtml(s.desc || "")}</div>
@@ -329,9 +334,7 @@ function renderCycle(admin) {
       )
       .join("");
 
-    const growLabel = `<div class="cycle-grow-label" style="left:${ext.x}%; top:${ext.y}%;">↻ 반복될수록 커짐</div>`;
-
-    spiralHtml = `<div class="cycle-spiral">${svg}${nodes}${growLabel}</div>`;
+    spiralHtml = `<div class="cycle-spiral">${svg}${nodes}</div>`;
 
     mobileHtml = `
       <div class="cycle-row-mobile">
@@ -345,7 +348,7 @@ function renderCycle(admin) {
           </div>`
           )
           .join("")}
-        <div class="cycle-loop-note">↻ ${n}단계 성과가 다시 1단계로 이어지며, 반복될수록 사이클이 커집니다</div>
+        <div class="cycle-loop-note">↻ ${n}단계 이후 다시 1단계로 순환됩니다</div>
       </div>`;
   }
 
