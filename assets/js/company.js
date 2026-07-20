@@ -123,7 +123,7 @@ function getStatCards(data) {
   }
 
   cards.push({
-    label: "펀더멘탈 업데이트",
+    label: "질적 펀더멘탈",
     value: String((data.updates || []).length),
     icon: "●",
     cls: "flat",
@@ -391,7 +391,7 @@ function openCycleModal() {
   });
 }
 
-/* ---------------- section: 정량 펀더멘탈 ---------------- */
+/* ---------------- section: 양적 펀더멘탈 ---------------- */
 
 function renderQuantitative(admin) {
   const q = state.data.quantitative || { metrics: [], metric_labels: {}, quarters: [] };
@@ -417,7 +417,7 @@ function renderQuantitative(admin) {
   return `
   <section class="block">
     <div class="section-head-row">
-      <div class="lhs"><h2>정량 펀더멘탈</h2></div>
+      <div class="lhs"><h2>양적 펀더멘탈</h2></div>
       <span>
         ${admin ? `<button type="button" class="edit-link" id="edit-metrics-btn">✎ 지표 설정</button>` : ""}
         ${admin ? `<button type="button" class="edit-link" id="add-quarter-btn">＋ 분기 추가/수정</button>` : ""}
@@ -515,7 +515,7 @@ function openQuarterModal() {
   });
 }
 
-/* ---------------- section: 펀더멘탈 업데이트 ---------------- */
+/* ---------------- section: 질적 펀더멘탈 (업데이트 타임라인) ---------------- */
 
 function renderUpdates(admin) {
   const updates = state.data.updates || [];
@@ -544,7 +544,7 @@ function renderUpdates(admin) {
   <section class="block">
     <div class="section-head-row">
       <div class="lhs">
-        <h2>펀더멘탈 업데이트</h2>
+        <h2>질적 펀더멘탈</h2>
         ${updates.length ? `<span class="badge-count">${updates.length}</span>` : ""}
       </div>
       ${admin ? `<button type="button" class="edit-link" id="add-update-btn">＋ 새 업데이트</button>` : ""}
