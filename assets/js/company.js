@@ -517,6 +517,13 @@ function openQuarterModal() {
 
 /* ---------------- section: 질적 펀더멘탈 (업데이트 타임라인) ---------------- */
 
+function sentimentLabel(s) {
+  if (s === "good") return "Good";
+  if (s === "bad") return "Bad";
+  if (s === "neutral") return "Neutral";
+  return "";
+}
+
 function renderUpdates(admin) {
   const updates = state.data.updates || [];
   const withIdx = updates.map((u, i) => ({ ...u, _idx: i }));
@@ -534,7 +541,10 @@ function renderUpdates(admin) {
              </div>`
           : ""
       }
-      <div class="tl-date">${escapeHtml(u.date || "")}</div>
+      <div class="tl-date-col">
+        <div class="tl-date">${escapeHtml(u.date || "")}</div>
+        ${u.sentiment ? `<span class="tl-sentiment ${u.sentiment}">${sentimentLabel(u.sentiment)}</span>` : ""}
+      </div>
       <div>
         <div class="tl-content">${formatRich(u.content || "")}</div>
         ${
@@ -572,6 +582,18 @@ function openAddUpdateModal(idx) {
     title: isEdit ? "업데이트 수정" : "새 업데이트 추가",
     fields: [
       { name: "date", label: "날짜", type: "date", value: existing?.date },
+      {
+        name: "sentiment",
+        label: "펀더멘탈 평가",
+        type: "select",
+        options: [
+          { value: "", label: "표시 안 함" },
+          { value: "good", label: "Good" },
+          { value: "bad", label: "Bad" },
+          { value: "neutral", label: "Neutral" }
+        ],
+        value: existing?.sentiment || ""
+      },
       { name: "content", label: "내용", type: "textarea", rows: 5, value: existing?.content },
       { name: "comment", label: "코멘트 (선택)", type: "textarea", rows: 3, value: existing?.comment },
       { type: "note", text: "굵게 표시하려면 텍스트를 **이렇게** 별표 두 개로 감싸세요." }
@@ -582,6 +604,7 @@ function openAddUpdateModal(idx) {
       if (!state.data.updates) state.data.updates = [];
       const entry = {
         date: v.date.trim(),
+        sentiment: v.sentiment || "",
         content: v.content.trim(),
         comment: v.comment.trim()
       };
