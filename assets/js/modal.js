@@ -79,9 +79,6 @@ const Modal = (() => {
     const errEl = overlayEl.querySelector(".modal-error");
     overlayEl.querySelector(".modal-x").onclick = close;
     overlayEl.querySelector(".modal-cancel").onclick = close;
-    overlayEl.addEventListener("click", (e) => {
-      if (e.target === overlayEl) close();
-    });
     document.addEventListener("keydown", function escHandler(e) {
       if (e.key === "Escape") {
         close();
